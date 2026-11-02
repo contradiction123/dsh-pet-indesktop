@@ -1587,7 +1587,7 @@ class MovieLibrary(QObject):
                 names = sorted(p.name for p in clip_dir.glob("f_*.webp"))
                 ok, _why = character_pack.admissible(
                     entry, meta, names,
-                    encoder=frameseq_provision.ENCODER_DESC,
+                    encoder=character_pack.encoder_for_pipeline(self._pack_index.pipeline),
                     fps=float(self._pack_index.fps),
                     canvas=self._pack_index.canvas)
                 if not ok:

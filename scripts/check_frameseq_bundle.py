@@ -20,7 +20,8 @@
 产物并回退 WebM 播放——目录名对而摘要不对的产物同样必须挡在构建期。
 
 **约束**：零 Qt 零第三方依赖（构建机环境最小假设），只读文件系统（一个字节都不
-写），不 import ``pet`` 包（那会连带 PySide6）。GIF 变体不在本门范围：它的素材是
+写）。无源包只导入纯数据的 ``pet.character_pack``，不导入 Qt 播放器或供给器。
+GIF 变体不在本门范围：它的素材是
 ``assets/characters_gif``（由 ``convert_to_gif.py`` 直出），没有帧序列这一层。
 
 用法：
@@ -136,7 +137,8 @@ def iter_character_dirs(characters_dir: Path) -> list[Path]:
     """素材根下的角色目录（含 videos 子目录的才算角色包），按名字排序。"""
     return sorted(
         (path for path in characters_dir.iterdir()
-         if path.is_dir() and (path / "videos").is_dir()),
+         if path.is_dir() and ((path / "videos").is_dir()
+                              or (path / "character.json").is_file())),
         key=lambda path: path.name,
     )
 
@@ -256,6 +258,33 @@ def check_bundle(characters_dir: Path) -> BundleReport:
     characters: list[tuple[str, int]] = []
     problems: list[Problem] = []
     for character_dir in iter_character_dirs(characters_dir):
+        if (character_dir / "character.json").is_file():
+            # 无源视频包与运行时共用索引及采纳规则，不套用白底反解的世代身份。
+            repo_root = str(Path(__file__).resolve().parent.parent)
+            if repo_root not in sys.path:
+                sys.path.insert(0, repo_root)
+            from pet import character_pack
+
+            try:
+                index = character_pack.load_index(character_dir)
+            except (OSError, ValueError) as exc:
+                problems.append(Problem("broken_meta", character_dir, str(exc)))
+                continue
+            if index is None:
+                problems.append(Problem("broken_meta", character_dir, "角色索引不可读"))
+                continue
+            characters.append((character_dir.name, len(index.clips)))
+            for entry in index.clips:
+                clip_dir = character_dir / entry.dir
+                ok, why = character_pack.admissible(
+                    entry, read_meta(clip_dir),
+                    [path.name for path in clip_dir.glob("f_*.webp")],
+                    encoder=(character_pack.NATIVE_ENCODER
+                             if index.pipeline == "native-rgba-v1" else ENCODER_DESC),
+                    fps=index.fps, canvas=index.canvas)
+                if not ok:
+                    problems.append(Problem("broken_meta", clip_dir, why))
+            continue
         videos_dir = character_dir / "videos"
         frameseq_root = character_dir / "frameseq"
         clips = iter_clips(videos_dir)
@@ -324,8 +353,8 @@ def main(argv: list[str] | None = None) -> int:
 
     report = check_bundle(characters_dir)
     if report.clip_total == 0:
-        print(f"[frameseq-gate] 未在 {characters_dir} 下扫到任何 webm 素材"
-              "（预期 <角色>/videos/**/*.webm）——构建环境异常，拒绝出包", file=sys.stderr)
+        print(f"[frameseq-gate] 未在 {characters_dir} 下扫到可播放素材"
+              "（预期 videos/**/*.webm 或 character.json）——构建环境异常，拒绝出包", file=sys.stderr)
         return 1
 
     if not report.ok:
@@ -339,7 +368,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[frameseq-gate] 检查 {display_path(characters_dir)}："
           f"{len(report.characters)} 个角色 / {report.clip_total} 个 clip")
     for name, count in report.characters:
-        print(f"  - {name}: {count} 个 clip，世代档 {ENCODER_DESC} / 反解 {UNBLEND_MARK}")
+        print(f"  - {name}: {count} 个 clip，已核对对应处理链身份")
     print("[frameseq-gate] PASS: 每个 clip 都有当前世代的帧序列产物，可以出包")
     return 0
 

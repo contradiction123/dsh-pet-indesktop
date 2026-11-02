@@ -1,0 +1,13 @@
+{
+  "frames": 1,
+  "fps": 12.0,
+  "canvas": [
+    1280,
+    720
+  ],
+  "durations_ms": [
+    180
+  ],
+  "encoder": "libwebp lossless (rgba straight, native-rgba-v1)",
+  "content_sha": "3430308376bf73edfe1d0959a267f0eb51788d670f079e46005f7124fcf05fce"
+}

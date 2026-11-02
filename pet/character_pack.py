@@ -28,7 +28,18 @@ _PARTS = ("core", "extra")
 #: 当前产品能播的存储格式与处理链。新格式/新处理链必须在这里登记，
 #: 否则解析阶段就拒收——不许"看不懂也照播"。
 SUPPORTED_FORMATS = frozenset({"lossless-frame-v1"})
-SUPPORTED_PIPELINES = frozenset({"white-v6", "unblend-white-v6"})
+SUPPORTED_PIPELINES = frozenset({"white-v6", "unblend-white-v6", "native-rgba-v1"})
+# 原生透明插画没有白底混色，不能冒充经过白底反解的旧视频素材。
+NATIVE_ENCODER = "libwebp lossless (rgba straight, native-rgba-v1)"
+
+
+def encoder_for_pipeline(pipeline: str) -> str:
+    """安装闭包与运行采纳共用处理链身份；未知处理链仍由索引解析拒收。"""
+    if pipeline == "native-rgba-v1":
+        return NATIVE_ENCODER
+    from .frameseq_provision import ENCODER_DESC
+
+    return ENCODER_DESC
 
 
 class IndexError_(ValueError):
@@ -235,8 +246,7 @@ def core_gaps(root, index: CharacterIndex) -> list[str]:
             continue
         # 与运行时采纳闸门同方向的四条（终审第六轮：缺 encoder 的包能装能激活、
         # 运行时却把全部 clip 拒掉——准入不许比采纳松）
-        from .frameseq_provision import ENCODER_DESC
-        if str(meta.get('encoder') or '') != ENCODER_DESC:
+        if str(meta.get('encoder') or '') != encoder_for_pipeline(index.pipeline):
             gaps.append(clip.name)
             continue
         meta_fps = meta.get('fps')

@@ -198,6 +198,32 @@ class PetSprite(QObject):
         self._visible = visible
         self._notify_dirty(rect, rect)
 
+    @property
+    def library(self):
+        return self._library
+
+    @library.setter
+    def library(self, library) -> None:
+        """换库前释放旧绑定，防止下一次起播触碰已经销毁的旧 Qt 播放器。
+
+        主宠和子宠都通过此属性换库。旧库此时仍存活，可以安全停播并断开
+        信号；绘制末帧和宿主回调保留，等待行为控制器绑定新库的首个动画。
+        """
+        if getattr(self, "_library", None) is library:
+            return
+        clip = getattr(self, "_clip", None)
+        if clip is not None:
+            self._disconnect_clip_signals(clip)
+            stop = getattr(clip, "stop", None)
+            if callable(stop):
+                stop()
+            self._clip = None
+            self._clip_name = None
+            self._frame_sig = None
+            self._hit_image = None
+            self._frame_dirty = True
+        self._library = library
+
     # ---------------------------------------------------------------- 播放节拍暂停（O3）
     def pause_clip(self) -> None:
         """停当前 clip 的播放节拍（隐藏/挂起期零帧推进）。

@@ -322,6 +322,15 @@ headless，本机两个发行名同版本并存、都提供 `cv2` 顶层模块�
   名称与鲸鱼标识的商标权归深度求索（DeepSeek）所有**——本项目是其桌面宠物衍生
   作品，按品牌本意作指示性使用（不代表官方出品/背书）。
 
+## 睡铃雪影娃娃（2026-11-02）
+
+- `assets/characters/sleepbell/` 的角色设计参考用户提供的本机交接包
+  `latest-pet-handoff`；高清造型经用户确认，六组插画动作由 OpenAI 图像工具生成。
+- 原始生成图保留在该角色的 `sources/`，运行素材为固定画布装配后的无损 WebP。
+  原交接包未被覆盖。此记录说明制作来源，不另行推定原角色的授权或商用范围。
+- 四组待机、走路、挥手为新素材；拖拽和转向暂用待机素材兜底。
+  接入说明见 [睡铃接入计划](docs/superpowers/plans/2026-11-02-sleepbell.md)。
+
 ## 9. Android 客户端与构建工具
 
 - Kotlin 及 kotlinx.coroutines：JetBrains 与贡献者，Apache-2.0。

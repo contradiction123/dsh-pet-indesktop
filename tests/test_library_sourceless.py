@@ -92,6 +92,28 @@ def test_library_builds_from_sourceless_pack(tmp_path):
         _close_all(lib)
 
 
+def test_bundled_sleepbell_uses_its_own_idle_pool(monkeypatch):
+    """默认角色可独立建库；四组待机不能误混入旧角色的动作。"""
+    from pet import catalog
+
+    # 用户安装的同名包不影响内置素材回归，也不读取本机活动包选择。
+    monkeypatch.setattr(catalog, "external_character_dirs", lambda: [])
+    monkeypatch.setattr(catalog, "character_pack_active", lambda _character: None)
+    root = catalog.resolve_character_video_dir("sleepbell")
+    assert root == catalog.characters_dir() / "sleepbell"
+    lib = MovieLibrary(character_id="sleepbell", prewarm_enabled=False)
+    try:
+        cats = catalog.build_categories(lib.names(), lib.manifest,
+                                        lib.folder_map, lib.folder_files)
+        assert set(cats["idles"]) == {"眨眼呼吸", "歪头张望", "轻晃铃铛", "困倦哈欠"}
+        assert cats["moves"] == ["轻步漫游"]
+        assert cats["clicks"] == ["挥手问好"]
+        assert catalog.character_body_box("sleepbell", root) == (224, 104, 416, 330)
+        assert lib.movie("眨眼呼吸").duration() == pytest.approx(2.700)
+    finally:
+        _close_all(lib)
+
+
 def test_sourceless_clip_with_wrong_frame_count_is_not_adopted(tmp_path):
     """索引写 4 帧、磁盘只有 2 帧 ⇒ 不采纳（半成品/被替换），取 clip 报明确状态。"""
     root = _sourceless_pack(tmp_path, frames=4)

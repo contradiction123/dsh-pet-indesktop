@@ -28,6 +28,15 @@ try:
     IDLE_WEBM = next(_IDLE_DIR.glob("*.webm"))
 except StopIteration:
     IDLE_WEBM = _IDLE_DIR / "待机呼吸休闲.webm"  # 报错信息用（main 里会检查存在性）
+    # 原生透明角色包没有 WebM；复用包索引定位待机首帧。
+    from pet.character_pack import load_index
+
+    _pack_root = catalog.resolve_character_video_dir(catalog.DEFAULT_CHARACTER)
+    _index = load_index(_pack_root)
+    if _index is not None:
+        _idle = next((clip for clip in _index.clips if clip.category == "idle"), None)
+        if _idle is not None:
+            IDLE_WEBM = _pack_root / _idle.dir / "f_0001.webp"
 OUT_ICO = ROOT / "assets" / "icon.ico"
 OUT_PREVIEW = ROOT / "assets" / "icon-preview.png"
 OUT_ICONSET = ROOT / "assets" / "icon.iconset"
@@ -53,6 +62,12 @@ _ICONSET_ENTRIES = (
 
 def extract_frame(path: Path) -> tuple[bytes, int, int]:
     """读取 RGBA 首帧原始字节，返回 (frame, width, height)。"""
+    if path.suffix.lower() in {".png", ".webp"}:
+        from PIL import Image
+
+        with Image.open(path) as source:
+            image = source.convert("RGBA")
+            return image.tobytes(), image.width, image.height
     import imageio_ffmpeg
 
     gen = None

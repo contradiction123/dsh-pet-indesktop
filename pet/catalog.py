@@ -62,8 +62,8 @@ SCALE_STEPS = (0.5, 0.72, 0.85, 1.0)
 
 # ---------------------------------------------------------------- 多形象
 # 当前内置形象与未来扩展形象 ID（目录名建议使用稳定 ASCII）
-DEFAULT_CHARACTER = 'shenshen'
-CHARACTERS = ('shenshen',)
+DEFAULT_CHARACTER = 'sleepbell'
+CHARACTERS = ('sleepbell', 'shenshen')
 MANIFEST_FILENAME = 'manifest.json'
 # videos 下的分类子目录
 DIR_IDLE = 'idle'
@@ -374,6 +374,10 @@ def resolve_character_video_dir(character_id: str) -> Path:
         candidate = root / character_id / 'videos'
         if candidate.is_dir():
             return candidate
+    # 原生插画包的索引和几何清单在包根；返回同一根，避免高清身体框被当作 640p。
+    bundled_pack = characters_dir() / character_id
+    if (bundled_pack / 'character.json').is_file():
+        return bundled_pack
     webm_dir_path = character_video_dir(character_id)
     if webm_dir_path.is_dir() and any(webm_dir_path.rglob('*.webm')):
         return webm_dir_path

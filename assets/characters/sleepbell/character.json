@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "id": "sleepbell",
+  "name": "睡铃雪影娃娃",
+  "canvas": [
+    1280,
+    720
+  ],
+  "fps": 12.0,
+  "pipeline": "native-rgba-v1",
+  "format": "lossless-frame-v1",
+  "parts": [
+    "core"
+  ],
+  "clips": [
+    {
+      "name": "眨眼呼吸",
+      "category": "idle",
+      "dir": "animations/idle/blink",
+      "frames": 6,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "93b488ccfecffd768264c325d71bbacc8b2267434df82f5b2569b8fb62de0c62",
+      "bytes": 1410760
+    },
+    {
+      "name": "歪头张望",
+      "category": "idle",
+      "dir": "animations/idle/tilt",
+      "frames": 12,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "b6a014f6e8cde295e436894b79291c4784094be3856aa563de4b1623e60827bb",
+      "bytes": 2776338
+    },
+    {
+      "name": "轻晃铃铛",
+      "category": "idle",
+      "dir": "animations/idle/sway",
+      "frames": 6,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "c3dc63c10a70cdea0bb7e1096961cb8bb356220c06d70a26c9b17fc93ae054bd",
+      "bytes": 1407620
+    },
+    {
+      "name": "困倦哈欠",
+      "category": "idle",
+      "dir": "animations/idle/yawn",
+      "frames": 12,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "709344c6277891ed1c7e327b8d825b3d53cf1b805fc222dc981f04f72f95d437",
+      "bytes": 2724994
+    },
+    {
+      "name": "轻步漫游",
+      "category": "move",
+      "dir": "animations/move/walk",
+      "frames": 12,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "93dab933278f0f621cd3ce8b9c1576c106a6cb9c5eed377a195f386409e44bc3",
+      "bytes": 2653752
+    },
+    {
+      "name": "挥手问好",
+      "category": "click",
+      "dir": "animations/click/wave",
+      "frames": 6,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "533341f8a0851361e21e64bab7bd5f6e82068d09a8993b4d844e6e3c8eaac000",
+      "bytes": 1319446
+    },
+    {
+      "name": "拖拽待机",
+      "category": "drag",
+      "dir": "animations/drag/blink",
+      "frames": 6,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "93b488ccfecffd768264c325d71bbacc8b2267434df82f5b2569b8fb62de0c62",
+      "bytes": 1410760
+    },
+    {
+      "name": "转向过渡",
+      "category": "turn",
+      "dir": "animations/turn/blink",
+      "frames": 1,
+      "key_every": 1,
+      "part": "core",
+      "content_sha": "3430308376bf73edfe1d0959a267f0eb51788d670f079e46005f7124fcf05fce",
+      "bytes": 227712
+    }
+  ]
+}

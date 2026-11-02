@@ -1,0 +1,81 @@
+{
+  "revision": "motion-v2",
+  "date": "2026-11-02",
+  "revised_actions": [
+    "tilt",
+    "yawn",
+    "walk"
+  ],
+  "poses_per_revised_action": 12,
+  "sources": [
+    "tilt-a-v2.png",
+    "tilt-b-v2.png",
+    "walk-a-v2.png",
+    "walk-b-v2.png",
+    "yawn-a-v2.png",
+    "yawn-b-v2.png"
+  ],
+  "standing_anchor_cell": [
+    256,
+    472
+  ],
+  "processing": "One scale per action; standing feet registered; locomotion uses fixed group origin; idle endpoints share the approved neutral pose.",
+  "pixel_review": [
+    {
+      "name": "眨眼呼吸",
+      "frames": 6,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": true
+    },
+    {
+      "name": "歪头张望",
+      "frames": 12,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": true
+    },
+    {
+      "name": "轻晃铃铛",
+      "frames": 6,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": true
+    },
+    {
+      "name": "困倦哈欠",
+      "frames": 12,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": true
+    },
+    {
+      "name": "轻步漫游",
+      "frames": 12,
+      "foot_x_range": 29.0,
+      "foot_y_range": 6,
+      "first_last_equal": false
+    },
+    {
+      "name": "挥手问好",
+      "frames": 6,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": false
+    },
+    {
+      "name": "拖拽待机",
+      "frames": 6,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": true
+    },
+    {
+      "name": "转向过渡",
+      "frames": 1,
+      "foot_x_range": 0.0,
+      "foot_y_range": 0,
+      "first_last_equal": true
+    }
+  ]
+}

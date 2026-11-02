@@ -147,6 +147,20 @@ GOOD_META = {"frames": 3, "encoder": "ENC", "fps": 24.0, "canvas": [640, 360],
              "content_sha": SHA}
 
 
+def test_native_rgba_requires_its_own_encoder_identity():
+    """原生透明帧不许借用白底反解身份，原有处理链继续使用原编码档。"""
+    from pet.frameseq_provision import ENCODER_DESC
+
+    index = cp.parse_index(_index(pipeline="native-rgba-v1"))
+    assert cp.encoder_for_pipeline(index.pipeline) == cp.NATIVE_ENCODER
+    assert cp.encoder_for_pipeline("white-v6") == ENCODER_DESC
+    meta = {**GOOD_META, "encoder": cp.NATIVE_ENCODER}
+    assert cp.admissible(_entry(), meta, FRAMES, encoder=cp.NATIVE_ENCODER,
+                         fps=24.0, canvas=(640, 360))[0]
+    assert not cp.admissible(_entry(), meta, FRAMES, encoder=ENCODER_DESC,
+                             fps=24.0, canvas=(640, 360))[0]
+
+
 def _ok(meta=None, names=None):
     return cp.admissible(_entry(), meta if meta is not None else GOOD_META,
                          names if names is not None else FRAMES,

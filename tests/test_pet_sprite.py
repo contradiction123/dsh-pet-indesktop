@@ -119,6 +119,32 @@ def _make_sprite(clip) -> PetSprite:
     return PetSprite(FakeLibrary(clip), pos=QPointF(0, 0), scale=0.5)
 
 
+def test_library_switch_detaches_before_old_timer_is_destroyed(monkeypatch):
+    """换库后旧 Qt 父对象可立即销毁，下一次同名动画绑定仍必须成功。"""
+    import shiboken6
+    from PySide6.QtCore import QTimer
+
+    old = FakeClip()
+    new = FakeClip()
+    sprite = _make_sprite(old)
+    seen = []
+    sprite._clip_finished_cb = seen.append
+    assert sprite.bind_clip("idle")
+    timer = QTimer()
+    timer.start(1000)
+    monkeypatch.setattr(old, "stop", timer.stop)
+    sprite.library = FakeLibrary(new)
+    assert not timer.isActive(), "必须在旧库销毁之前停掉旧播放"
+    old.finished.emit()
+    assert seen == [], "旧库圈末不可触发新角色的行为链"
+    shiboken6.delete(timer)
+    assert sprite.bind_clip("idle")
+    assert new.start_count == 1
+    new.finished.emit()
+    assert seen == [sprite], "换库不能丢失宿主的圈末回调"
+    sprite.close()
+
+
 # ---------------------------------------------------------------- F2：圈末 re-arm
 def test_restart_clip_starts_current_clip_again():
     clip = FakeClip()

@@ -375,6 +375,7 @@ class FrameSeqClip(QObject):
         self._fps = DEFAULT_FPS
         #: meta.json 里的整数帧数（>0 才有效；缺失/非法 = None，计数走列目录兜底）
         self._meta_count: int | None = None
+        self._durations_ms: tuple[int, ...] = ()
         try:
             meta = json.loads((self._dir / "meta.json").read_text(encoding="utf-8"))
             self._fps = float(meta.get("fps") or DEFAULT_FPS)
@@ -383,6 +384,11 @@ class FrameSeqClip(QObject):
             meta_count = meta.get("frames")
             if type(meta_count) is int and meta_count > 0:
                 self._meta_count = meta_count
+            # 插画关键帧有独立停留时长；整表有效才采用，旧素材继续固定 FPS。
+            durations = meta.get("durations_ms")
+            if (isinstance(durations, list) and len(durations) == self._meta_count
+                    and all(type(value) is int and value > 0 for value in durations)):
+                self._durations_ms = tuple(durations)
         except (OSError, ValueError):
             pass  # 缺 meta 按默认 fps（与包内素材 24fps 一致）
         if self._fps <= 0:
@@ -448,12 +454,16 @@ class FrameSeqClip(QObject):
         return max(1, self._frame_count())
 
     def duration(self) -> float:
+        if self._durations_ms:
+            return sum(self._durations_ms) / 1000.0 / self.playback_speed
         return self._frame_count() / self._fps / self.playback_speed
 
     def currentFrameNumber(self) -> int:
         return self._cur
 
     def currentTimeSeconds(self) -> float:
+        if self._durations_ms:
+            return sum(self._durations_ms[:self._cur]) / 1000.0 / self.playback_speed
         frames = self._frame_count()
         if frames <= 0:
             return 0.0
@@ -772,6 +782,8 @@ class FrameSeqClip(QObject):
         return len(self._frames)
 
     def _interval_ms(self) -> int:
+        if self._durations_ms and 0 <= self._cur < len(self._durations_ms):
+            return max(1, round(self._durations_ms[self._cur] / self.playback_speed))
         return max(1, round(1000.0 / self._fps / self.playback_speed))
 
     def _apply(self, img: QImage, frame: int) -> None:
@@ -784,6 +796,9 @@ class FrameSeqClip(QObject):
         self._img = img
         self._img_frame = frame
         self._pm = None  # 新帧到货 → 惰性 pixmap 缓存失效
+        if self._durations_ms:
+            # 从实际上屏开始计算这一帧的停留；异步迟到不吃掉关键姿势的时长。
+            self._set_interval_now(self._interval_ms())
 
     def _request(self, idx: int) -> None:
         """请求 worker 预取一帧（幂等去重：已到货/在途不重发）。

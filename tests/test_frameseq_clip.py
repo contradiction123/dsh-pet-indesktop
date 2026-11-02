@@ -66,6 +66,41 @@ def _make_frames(dir_path: Path, count: int = 4, size: tuple[int, int] = (32, 24
         encoding="utf-8")
 
 
+def test_variable_frame_durations_preserve_clip_time_and_speed(tmp_path):
+    """关键帧时间是累计停留时长，不能用平均 FPS 代替。"""
+    directory = tmp_path / "timed"
+    _make_frames(directory, count=3)
+    meta_path = directory / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta["durations_ms"] = [280, 110, 320]
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+    clip = FrameSeqClip(directory)
+    try:
+        assert clip.duration() == pytest.approx(0.710)
+        assert clip.jumpToFrame(2)
+        assert clip.currentTimeSeconds() == pytest.approx(0.390)
+        clip.set_playback_speed(2.0)
+        assert clip.duration() == pytest.approx(0.355)
+        assert clip.currentTimeSeconds() == pytest.approx(0.195)
+    finally:
+        clip.close()
+
+
+@pytest.mark.parametrize("durations", [[200], [280, 0, 320], [280, True, 320]])
+def test_invalid_frame_durations_keep_legacy_fps(tmp_path, durations):
+    directory = tmp_path / "invalid-timing"
+    _make_frames(directory, count=3)
+    meta_path = directory / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta["durations_ms"] = durations
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+    clip = FrameSeqClip(directory)
+    try:
+        assert clip.duration() == pytest.approx(3 / 24)
+    finally:
+        clip.close()
+
+
 def test_start_delivers_first_frame_async(tmp_path):
     d = tmp_path / "clip"
     _make_frames(d)
